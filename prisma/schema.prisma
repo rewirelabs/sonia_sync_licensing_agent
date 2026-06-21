@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Brief {
+  id        String   @id @default(cuid())
+  rawInput  String
+  lang      String
+  createdAt DateTime @default(now())
+
+  targetArcs     TargetArc[]
+  shortlistItems ShortlistItem[]
+}
+
+model TargetArc {
+  id                String  @id @default(cuid())
+  briefId           String
+  shape             String  // build|steady|peak_early|peak_late|pulse
+  peakPositionPct   Float
+  vocalGender       String
+  themesIncluded    String  // JSON stringified array
+  themesExcluded    String  // JSON stringified array
+  targetMarkets     String  // JSON stringified array
+  languages         String  // JSON stringified array
+  targetDurationSec Float
+  brandProfile      String
+
+  brief Brief @relation(fields: [briefId], references: [id], onDelete: Cascade)
+}
+
+model ShortlistItem {
+  id                       String  @id @default(cuid())
+  briefId                  String
+  isrc                     String
+  spotifyId                String?
+  title                    String
+  artist                   String
+  fitScore                 Float
+  fitRationale             String
+  recommendedWindowStartMs Int
+  recommendedWindowEndMs   Int
+  moneyLineTimestampMs     Int
+  safetyVerdict            String  // safe|caution|unsafe
+  safeSectionStartMs       Int?
+  safeSectionEndMs         Int?
+  coverUrl                 String?
+  previewUrl               String?
+
+  brief Brief @relation(fields: [briefId], references: [id], onDelete: Cascade)
+}
+
+model Stems {
+  id              String  @id @default(cuid())
+  isrc            String  @unique
+  instrumentalUrl String
+  acapellaUrl     String
+}

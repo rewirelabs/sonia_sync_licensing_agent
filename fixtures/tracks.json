@@ -1,0 +1,44 @@
+[
+  {
+    "isrc": "USUM71027584",
+    "title": "Rolling in the Deep",
+    "artist": "Adele",
+    "lang": "en",
+    "durationMs": 228000
+  },
+  {
+    "isrc": "GBUM71029604",
+    "title": "Someone Like You",
+    "artist": "Adele",
+    "lang": "en",
+    "durationMs": 285000
+  },
+  {
+    "isrc": "DEUM71501234",
+    "title": "Du Hast",
+    "artist": "Rammstein",
+    "lang": "de",
+    "durationMs": 234000
+  },
+  {
+    "isrc": "ITB000000000",
+    "title": "Nel Blu Dipinto Di Blu",
+    "artist": "Domenico Modugno",
+    "lang": "it",
+    "durationMs": 215000
+  },
+  {
+    "isrc": "ESB000000000",
+    "title": "Despacito",
+    "artist": "Luis Fonsi",
+    "lang": "es",
+    "durationMs": 228000
+  },
+  {
+    "isrc": "USSM11800001",
+    "title": "Without Me",
+    "artist": "Eminem",
+    "lang": "en",
+    "durationMs": 290000
+  }
+]

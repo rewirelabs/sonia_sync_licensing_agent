@@ -1,0 +1,15 @@
+/* ============================================================
+   SonIA — Motion tokens
+   Quiet by default. Only the waveform mark animates ambiently;
+   everything else holds still until a real signal arrives.
+   ============================================================ */
+
+:root {
+  --dur-micro: 120ms; /* @kind other */
+  --dur-std:   200ms; /* @kind other */
+  --dur-enter: 320ms; /* @kind other */
+
+  /* Signature easing */
+  --ease: cubic-bezier(0.2, 0, 0, 1); /* @kind other */
+  --ease-out: cubic-bezier(0.2, 0, 0, 1); /* @kind other */
+}

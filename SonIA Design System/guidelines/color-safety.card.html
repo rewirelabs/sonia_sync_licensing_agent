@@ -1,0 +1,20 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Brand-safety semantics" subtitle="Clear / review / block — never used as color alone" -->
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><link rel="stylesheet" href="../styles.css">
+<style>
+  body{background:var(--bg-base);margin:0;padding:20px;font-family:var(--font-body)}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:340px}
+  .sw{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+  .chip{height:48px}
+  .info{padding:7px 9px;background:var(--bg-surface)}
+  .nm{font-size:11px;font-weight:500;color:var(--text-primary)}
+  .hx{font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin-top:1px}
+  .note{font-family:var(--font-mono);font-size:11px;color:var(--text-secondary);margin-top:14px}
+</style></head><body>
+  <div class="grid">
+    <div class="sw"><div class="chip" style="background:#34D399"></div><div class="info"><div class="nm">clear</div><div class="hx">#34D399</div></div></div>
+    <div class="sw"><div class="chip" style="background:#FBBF24"></div><div class="info"><div class="nm">review</div><div class="hx">#FBBF24</div></div></div>
+    <div class="sw"><div class="chip" style="background:#F0386B"></div><div class="info"><div class="nm">block</div><div class="hx">#F0386B</div></div></div>
+  </div>
+  <div class="note">always paired with an icon + label — accessibility &amp; brand rule</div>
+</body></html>

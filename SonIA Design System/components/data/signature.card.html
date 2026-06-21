@@ -1,0 +1,64 @@
+<!-- @dsCard group="Components" viewport="700x600" name="Signature: Waveform · Mood · Safety · Match · TrackCard" subtitle="The data-as-decoration vocabulary" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { background: var(--bg-base); margin: 0; padding: 28px; font-family: var(--font-body); }
+  .block { margin-bottom: 26px; }
+  .lbl { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; }
+  .row { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+  .wf { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .wf small { font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-secondary); }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel">
+  const { Waveform, MoodChip, SafetyBadge, MatchRing, TrackCard } = window.SonIADesignSystem_4b5948;
+  function Demo() {
+    return (
+      <div>
+        <div className="block">
+          <div className="lbl">Waveform — the mark</div>
+          <div className="row">
+            {['idle','listening','thinking','speaking'].map(s => (
+              <div className="wf" key={s}><Waveform state={s} height={38} /><small>{s}</small></div>
+            ))}
+          </div>
+        </div>
+        <div className="block">
+          <div className="lbl">Mood chips — one hue per category</div>
+          <div className="row" style={{gap:10}}>
+            {['calm','mellow','warm','energetic','intense'].map(m => <MoodChip key={m} mood={m}>{m}</MoodChip>)}
+          </div>
+        </div>
+        <div className="block">
+          <div className="lbl">Brand-safety — icon + label, never color alone</div>
+          <div className="row" style={{gap:10}}>
+            <SafetyBadge state="clear" /><SafetyBadge state="review" /><SafetyBadge state="block" />
+          </div>
+        </div>
+        <div className="block">
+          <div className="lbl">Match ring — 0–100, cyan → orange</div>
+          <div className="row">
+            <MatchRing value={92} /><MatchRing value={74} /><MatchRing value={48} /><MatchRing value={23} />
+          </div>
+        </div>
+        <div className="block">
+          <div className="lbl">Track card — the assembled result</div>
+          <TrackCard title="Glass Veins" artist="HÖRT" duration="3:24" language="EN" bpm={128}
+            moods={['mellow','warm']} match={87} safety="clear" windowLabel="01:12–01:42" />
+        </div>
+      </div>
+    );
+  }
+  ReactDOM.createRoot(document.getElementById('root')).render(<Demo/>);
+</script>
+</body>
+</html>

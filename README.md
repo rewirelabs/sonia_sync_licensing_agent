@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SonIA — AI Sync Buddy
 
-## Getting Started
+"She doesn't search. She listens."
 
-First, run the development server:
+SonIA is a brief-to-shortlist sync-licensing agent built for the Musixmatch Musicathon. It helps music supervisors go from a messy scene brief to a rank-ordered, licensable shortlist of tracks. It identifies the optimal ~30-second window, the "money line" of lyrics, and verifies brand safety across languages.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Architecture
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The system is built on a strict **two-layer architecture**:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 1. The Floor (Always Active)
+The core foundation powered entirely by Musixmatch. It is audio-free and provides metadata, lyrics, richsync (word-level timing), subtitle (line-level timing), translations, and mood. The Musixmatch layer drives the **Section Aligner**, which matches emotional arcs in lyrics against the user's brief.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 2. The Ceiling (Feature Flagged)
+Optional enrichment APIs that run at the end of the pipeline. Kept behind feature flags to ensure resilience.
+- **Spotify**: Cover art and 30s audio previews (joined via ISRC).
+- **Cyanite**: 15s audio sound curves blended with the lyric curve.
+- **LALAL.AI**: Stems generation.
+- **ElevenLabs**: Speech-to-text (brief intake) and Text-to-speech.
 
-## Learn More
+## Hard Constraints: No-Storage Rule
+Per competition guidelines, **no Musixmatch data is persisted**. Lyrics, translations, richsync timings, and mood metadata are strictly **ephemeral**. They exist only in memory during the request lifecycle. 
+- See `lib/core/ephemeral.ts` for the guard implementation.
+- Our database (SQLite via Prisma) only stores derived AI metadata (`Brief`, `TargetArc`, `ShortlistItem`).
 
-To learn more about Next.js, take a look at the following resources:
+## Local Setup (Fixture-First)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+SonIA degrades gracefully. If you run the app without API keys, it uses bundled `fixtures/` to simulate the full pipeline.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Install dependencies: `npm install`
+2. Run database migrations: `npm run db:migrate`
+3. Copy the env file: `cp .env.example .env` (Add keys if you want live mode, leave empty for fixture mode).
+4. Start the dev server: `npm run dev`
 
-## Deploy on Vercel
+### Feature Flags
+In your `.env`, you can enable the ceiling layer:
+- `FEATURE_SPOTIFY_ENRICHMENT=true`
+- `FEATURE_CYANITE_SOUND_CURVE=true`
+- `FEATURE_LALAL_STEMS=true`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+*(Note: The public repository only contains this clean demo without internal ToolStar credentials).*

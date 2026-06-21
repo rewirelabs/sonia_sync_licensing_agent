@@ -1,0 +1,9 @@
+/* ============================================================
+   SonIA — Webfonts
+   Space Grotesk (display) · Inter (body) · JetBrains Mono (data)
+   Loaded from the Google Fonts CDN. To ship self-hosted binaries,
+   drop woff2 files in assets/fonts/ and replace the @import below
+   with local @font-face rules.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');

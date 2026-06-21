@@ -1,0 +1,32 @@
+[
+  {
+    "startMs": 0,
+    "endMs": 15000,
+    "text": "(Instrumental intro)"
+  },
+  {
+    "startMs": 15000,
+    "endMs": 20000,
+    "text": "Du"
+  },
+  {
+    "startMs": 20000,
+    "endMs": 25000,
+    "text": "Du hast"
+  },
+  {
+    "startMs": 25000,
+    "endMs": 30000,
+    "text": "Du hast mich"
+  },
+  {
+    "startMs": 30000,
+    "endMs": 38000,
+    "text": "Wir trinken viel Alkohol und fahren schnell"
+  },
+  {
+    "startMs": 38000,
+    "endMs": 45000,
+    "text": "Du hast mich gefragt und ich hab nichts gesagt"
+  }
+]
