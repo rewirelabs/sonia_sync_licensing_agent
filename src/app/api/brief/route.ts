@@ -12,7 +12,7 @@ import { Track } from '@/lib/connectors/types';
 import { prisma } from '@/lib/db';
 import { discoverCandidates } from '@/lib/agent/discovery';
 import { findTrackIsrc } from '@/lib/connectors/musixmatch';
-import { isMusixmatchLive } from '@/lib/config/flags';
+import { isMusixmatchLive, flags } from '@/lib/config/flags';
 import { getCyaniteCurve, searchCyaniteByFreeText } from '@/lib/connectors/cyanite';
 
 async function getAvailableTracks(): Promise<Track[]> {
@@ -131,13 +131,25 @@ export async function POST(req: Request) {
       else if (safetyVerdicts.some(v => v.severity === 'med')) safetyLevel = 'caution';
 
 
+      let finalCurve = scores.map(s => s.intensity);
+      if (flags.cyaniteSoundCurve && (enrichment as any).spotifyId) {
+        try {
+          const audioCurve = await getCyaniteCurve((enrichment as any).spotifyId);
+          if (audioCurve && audioCurve.length > 0) {
+            finalCurve = audioCurve;
+          }
+        } catch(e) {
+          console.error('[Cyanite] Audio analysis failed, using lyric curve fallback.');
+        }
+      }
+
       rankedCandidates.push({
         ...track,
         durationMs: realDurationMs,
         alignment,
         safetyVerdicts,
         safetyLevel,
-        curve: scores.map(s => s.intensity),
+        curve: finalCurve,
         ...enrichment
       } as any);
     }
@@ -158,13 +170,25 @@ export async function POST(req: Request) {
         let safetyLevel = 'safe';
         if (safetyVerdicts.some(v => v.severity === 'high')) safetyLevel = 'unsafe';
         else if (safetyVerdicts.some(v => v.severity === 'med')) safetyLevel = 'caution';
+        let finalCurveFallback = scores.map(s => s.intensity);
+        if (flags.cyaniteSoundCurve && (enrichment as any).spotifyId) {
+          try {
+            const audioCurve = await getCyaniteCurve((enrichment as any).spotifyId);
+            if (audioCurve && audioCurve.length > 0) {
+              finalCurveFallback = audioCurve;
+            }
+          } catch(e) {
+            console.error('[Cyanite] Audio analysis failed, using lyric curve fallback.');
+          }
+        }
+
         rankedCandidates.push({
           ...track,
           durationMs: realDurationMs,
           alignment,
           safetyVerdicts,
           safetyLevel,
-          curve: scores.map(s => s.intensity),
+          curve: finalCurveFallback,
           ...enrichment
         } as any);
       }
