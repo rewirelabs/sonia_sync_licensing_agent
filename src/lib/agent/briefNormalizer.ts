@@ -18,7 +18,7 @@ export async function normalizeBrief(briefText: string): Promise<TargetArc> {
   }
 
   const client = getAnthropicClient();
-  const prompt = `You are Fable, an expert music supervisor AI.
+  const systemPrompt = `You are Fable, an expert music supervisor AI.
 Extract structured metadata from the following scene brief.
 Respond ONLY with a valid JSON object matching this schema:
 {
@@ -31,15 +31,22 @@ Respond ONLY with a valid JSON object matching this schema:
   "languages": string[],
   "targetDurationSec": number (usually 30),
   "brandProfile": string
-}
+}`;
 
-Brief: "${briefText}"`;
+  const userPrompt = `Raw Brief: "${briefText}"`;
 
   try {
     const response = await client.messages.create({
       model: 'claude-opus-4-8',
-      max_tokens: 4096,
-      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 1024,
+      system: [
+        {
+          type: "text",
+          text: systemPrompt,
+          cache_control: { type: "ephemeral" }
+        }
+      ],
+      messages: [{ role: 'user', content: userPrompt }],
     });
     let content = (response.content[0] as any).text.trim();
     if (content.startsWith('```')) {

@@ -1,15 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #F8F5EF;
-  --surface: #FCFAF6;
-  --ink: #211D1A;
-  --ink-soft: #7A7269;
-  --hairline: #E7E0D5;
-  --forest: #2F5D50;
-  --terracotta: #BE5B3D;
-  --caution: #B07D2B;
-  --unsafe: #9E3B2E;
+  --bg: #07080c;
+  --surface: #07080c;
+  --ink: #eef0f4;
+  --ink-soft: rgba(233, 236, 243, 0.55);
+  --hairline: rgba(255, 255, 255, 0.08);
+  --forest: #ff8a3d;
+  --terracotta: #ff3d7f;
+  --caution: #ffb43d;
+  --unsafe: #ff4d4d;
+  --accent: #ff8a3d;
+  --glass: rgba(255, 255, 255, 0.045);
+  --glass-strong: rgba(255, 255, 255, 0.075);
+  --glass-border: rgba(255, 255, 255, 0.13);
+  --radius: 16px;
+  --blur: 34px;
 }
 
 @theme inline {
@@ -22,10 +28,31 @@
   --color-terracotta: var(--terracotta);
   --color-caution: var(--caution);
   --color-unsafe: var(--unsafe);
+  --color-accent: var(--accent);
 }
 
 body {
   background-color: var(--bg);
   color: var(--ink);
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
+
+::selection { background: rgba(255,138,61,0.3); }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+@keyframes sx-drift1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(6%,-8%) scale(1.18); } }
+@keyframes sx-drift2 { 0%,100% { transform: translate(0,0) scale(1.1); } 50% { transform: translate(-7%,6%) scale(0.95); } }
+@keyframes sx-drift3 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(5%,7%) scale(1.2); } }
+@keyframes sx-wave { from { transform: translateX(0); } to { transform: translateX(-400px); } }
+@keyframes sx-spin { to { transform: rotate(360deg); } }
+@keyframes sx-pulse { 0%,100% { transform: scale(1); opacity: .92; } 50% { transform: scale(1.07); opacity: 1; } }
+@keyframes sx-fadeup { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes sx-fadein { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes sx-scan { 0% { left: -2%; opacity: 0; } 12% { opacity: 1; } 88% { opacity: 1; } 100% { left: 102%; opacity: 0; } }
+@keyframes sx-blink { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
+@keyframes sx-bars { 0%,100% { transform: scaleY(0.35); } 50% { transform: scaleY(1); } }
+@keyframes sx-glowpulse { 0%,100% { opacity: .5; } 50% { opacity: 1; } }

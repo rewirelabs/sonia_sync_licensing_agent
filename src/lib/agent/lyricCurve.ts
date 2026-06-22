@@ -21,7 +21,7 @@ export async function scoreLyricCurve(lines: RichSyncLine[], targetArc: TargetAr
   const client = getAnthropicClient();
   const numberedLines = lines.map((l, i) => `[${i}] ${l.text}`).join('\n');
   
-  const prompt = `You are Fable, an expert music supervisor AI.
+  const systemPrompt = `You are Fable, an expert music supervisor AI.
 Analyze the following lyrics against this target brief profile:
 Themes: ${targetArc.themesIncluded.join(', ')}
 Shape: ${targetArc.shape}
@@ -34,16 +34,23 @@ Schema for each inner array (keep it incredibly dense):
   valence (-1.0 to 1.0),
   themeFit (0.0 to 1.0),
   isMoneyCandidate (0 or 1)
-]
+]`;
 
-Lyrics:
+  const userPrompt = `Lyrics:
 ${numberedLines}`;
 
   try {
     const response = await client.messages.create({
       model: 'claude-opus-4-8',
       max_tokens: 4096,
-      messages: [{ role: 'user', content: prompt }],
+      system: [
+        {
+          type: "text",
+          text: systemPrompt,
+          cache_control: { type: "ephemeral" }
+        }
+      ],
+      messages: [{ role: 'user', content: userPrompt }],
     });
     let content = (response.content[0] as any).text.trim();
     if (content.startsWith('```')) {

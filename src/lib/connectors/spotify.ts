@@ -47,6 +47,7 @@ export async function enrichWithSpotify(isrc: string): Promise<SpotifyEnrichment
         coverUrl: track.album?.images?.[0]?.url,
         previewUrl: track.preview_url,
         spotifyId: track.id,
+        durationMs: track.duration_ms,
       };
     }
   } catch (e) {
@@ -54,4 +55,43 @@ export async function enrichWithSpotify(isrc: string): Promise<SpotifyEnrichment
   }
 
   return {};
+}
+
+export async function getSpotifyTrackMetadata(spotifyId: string) {
+  if (!flags.spotifyEnrichment) {
+    return null;
+  }
+  const clientId = process.env.SPOTIFY_CLIENT_ID;
+  const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+  if (!clientId || !clientSecret) return null;
+
+  try {
+    const tokenRes = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+      },
+      body: 'grant_type=client_credentials',
+    });
+    
+    if (!tokenRes.ok) throw new Error('Spotify auth failed');
+    const { access_token } = await tokenRes.json();
+
+    const trackRes = await fetch(`https://api.spotify.com/v1/tracks/${spotifyId}`, {
+      headers: { 'Authorization': `Bearer ${access_token}` }
+    });
+
+    if (!trackRes.ok) throw new Error('Spotify track failed');
+    const track = await trackRes.json();
+    
+    return {
+      isrc: track.external_ids?.isrc,
+      title: track.name,
+      artist: track.artists?.[0]?.name,
+    };
+  } catch (e) {
+    console.error('[Spotify] Metadata failed for', spotifyId, e);
+    return null;
+  }
 }

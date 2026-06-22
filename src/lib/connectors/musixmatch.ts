@@ -43,6 +43,29 @@ export async function findTrackIsrc(title: string, artist: string): Promise<stri
   }
 }
 
+export async function searchTracksByLyrics(keywords: string, lang: string): Promise<{ isrc: string, title: string, artist: string }[]> {
+  try {
+    const trackBody = await fetchMxm('/track.search', {
+      q_lyrics: keywords,
+      f_lyrics_language: lang || 'en',
+      s_track_rating: 'desc',
+      page_size: '5',
+      f_has_lyrics: '1'
+    });
+    const trackList = trackBody.track_list;
+    if (!trackList || trackList.length === 0) return [];
+
+    return trackList.map((t: any) => ({
+      isrc: t.track.track_isrc,
+      title: t.track.track_name,
+      artist: t.track.artist_name
+    })).filter((t: any) => t.isrc != null);
+  } catch (e) {
+    console.error(`[Musixmatch] Failed to search tracks by lyrics "${keywords}"`, e);
+    return [];
+  }
+}
+
 export async function getMusixmatchLyricDoc(isrc: string): Promise<LyricDoc | null> {
   if (!isMusixmatchLive()) {
     console.log(`[Musixmatch] Fetching fixture data for ${isrc}`);

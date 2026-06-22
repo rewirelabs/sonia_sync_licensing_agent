@@ -6,47 +6,68 @@ export interface DiscoveredSong {
   artist: string;
 }
 
-export async function discoverCandidates(targetArc: TargetArc): Promise<DiscoveredSong[]> {
+export interface DiscoveryResult {
+  tracks: DiscoveredSong[];
+  lyricalKeywords: string;
+}
+
+export async function discoverCandidates(targetArc: TargetArc): Promise<DiscoveryResult> {
   if (!isFableLive()) {
-    return [
-      { title: 'Shape of You', artist: 'Ed Sheeran' },
-      { title: 'Blinding Lights', artist: 'The Weeknd' },
-    ];
+    return {
+      tracks: [
+        { title: 'Shape of You', artist: 'Ed Sheeran' },
+        { title: 'Blinding Lights', artist: 'The Weeknd' },
+      ],
+      lyricalKeywords: "falling in love, running fast"
+    };
   }
 
   const client = getAnthropicClient();
-  const prompt = `You are a world-class Music Supervisor.
-I need you to suggest 5 real, well-known songs that perfectly fit this brief profile:
-Themes: ${targetArc.themesIncluded.join(', ')}
-Shape: ${targetArc.shape}
-Vocal Gender: ${targetArc.vocalGender}
-Target Markets: ${targetArc.targetMarkets?.join(', ')}
+  const systemPrompt = `You are Fable, an avant-garde music supervisor AI.
+The user will provide a brief. You must discover exactly 5 distinct tracks that are PERFECT for this brief.
+IMPORTANT: AVOID OBVIOUS OR OVERPLAYED TRACKS. No "Happy" by Pharrell, no generic stock music. Look for deep cuts, indie gems, and tracks that elevate the scene.
 
-Respond ONLY with a valid JSON array of objects. No markdown.
-Schema:
-[
-  { "title": "Song Title", "artist": "Artist Name" }
-]`;
+Return ONLY a valid JSON object matching this schema, no markdown, no text:
+{
+  "tracks": [
+    { "title": "string", "artist": "string" }
+  ],
+  "lyricalKeywords": "string (a comma-separated list of poetic, mood-driven phrases and exact lyrical snippets that would perfectly match the brief, to be used for semantic search)"
+}`;
+
+  const userPrompt = `Brief details:
+Languages: ${targetArc.languages.join(', ')}
+Themes: ${targetArc.themesIncluded.join(', ')}
+Excluded Themes: ${targetArc.themesExcluded.join(', ')}
+Shape: ${targetArc.shape}
+Brand Profile: ${targetArc.brandProfile || 'Generic'}`;
 
   try {
     const response = await client.messages.create({
       model: 'claude-opus-4-8',
-      max_tokens: 4096,
-      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 1024,
+      system: [
+        {
+          type: "text",
+          text: systemPrompt,
+          cache_control: { type: "ephemeral" }
+        }
+      ],
+      messages: [{ role: 'user', content: userPrompt }],
     });
     let content = (response.content[0] as any).text.trim();
     if (content.startsWith('```')) {
       const match = content.match(/```(?:json)?\n([\s\S]*?)\n```/);
       if (match) content = match[1].trim();
     }
-    const startIndex = content.indexOf('[');
-    const endIndex = content.lastIndexOf(']');
+    const startIndex = content.indexOf('{');
+    const endIndex = content.lastIndexOf('}');
     if (startIndex !== -1 && endIndex !== -1) {
       content = content.substring(startIndex, endIndex + 1);
     }
-    return JSON.parse(content) as DiscoveredSong[];
+    return JSON.parse(content) as DiscoveryResult;
   } catch (e) {
     console.error('[Fable] Failed to discover candidates', e);
-    return [];
+    return { tracks: [], lyricalKeywords: "" };
   }
 }

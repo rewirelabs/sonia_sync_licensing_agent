@@ -6,6 +6,7 @@ export interface AlignmentResult {
   endMs: number;
   fitScore: number;
   moneyLineTimestampMs: number;
+  moneyLine?: string;
   fitRationale: string;
 }
 
@@ -19,6 +20,7 @@ export function alignSection(
   let bestFitScore = -1;
   let bestStartMs = 0;
   let bestMoneyLineMs = 0;
+  let bestMoneyLineText = '';
 
   // Step 1s through the track
   const stepMs = 1000;
@@ -52,31 +54,39 @@ export function alignSection(
 
     const fitScore = ((avgIntensity * 0.3) + (avgThemeFit * 0.5) + (Math.max(0, shapeMultiplier) * 0.2)) * truncationPenalty;
 
-    if (fitScore > bestFitScore) {
-      bestFitScore = fitScore;
-      bestStartMs = startMs;
+      if (fitScore > bestFitScore) {
+        bestFitScore = fitScore;
+        bestStartMs = startMs;
 
-      // Find money line
-      let bestMoneyLine = windowLines[0];
-      let maxMoneyScore = -1;
-      for (const item of windowLines) {
-        if (item.s.isMoneyCandidate) {
-          const moneyScore = item.s.themeFit * item.s.intensity;
-          if (moneyScore > maxMoneyScore) {
-            maxMoneyScore = moneyScore;
-            bestMoneyLine = item;
+        // Find money line
+        let bestMoneyLine = windowLines[0];
+        let maxMoneyScore = -1;
+        for (const item of windowLines) {
+          if (item.s.isMoneyCandidate) {
+            const moneyScore = item.s.themeFit * item.s.intensity;
+            if (moneyScore > maxMoneyScore) {
+              maxMoneyScore = moneyScore;
+              bestMoneyLine = item;
+            }
           }
         }
+        bestMoneyLineMs = bestMoneyLine.l.startMs;
+        bestMoneyLineText = bestMoneyLine.l.text;
       }
-      bestMoneyLineMs = bestMoneyLine.l.startMs;
     }
-  }
 
-  return {
-    startMs: bestStartMs,
-    endMs: Math.min(bestStartMs + windowDurationMs, trackDurationMs),
-    fitScore: bestFitScore * 100, // 0-100 scale
-    moneyLineTimestampMs: bestMoneyLineMs,
-    fitRationale: `Strong theme alignment with a ${targetArc.shape} energy profile.`,
-  };
+    const fitPercentage = Math.min(100, bestFitScore * 100);
+    const themes = targetArc.brandProfile || 'general context';
+    const rationale = fitPercentage > 85
+      ? `Exceptional theme alignment with the requested ${targetArc.shape || 'steady'} energy profile for the ${themes} sector.`
+      : `Solid narrative fit highlighting the core themes, naturally matching the ${targetArc.shape || 'steady'} arc constraint.`;
+
+    return {
+      startMs: bestStartMs,
+      endMs: Math.min(bestStartMs + windowDurationMs, trackDurationMs),
+      fitScore: fitPercentage,
+      moneyLineTimestampMs: bestMoneyLineMs,
+      moneyLine: bestMoneyLineText,
+      fitRationale: rationale,
+    };
 }

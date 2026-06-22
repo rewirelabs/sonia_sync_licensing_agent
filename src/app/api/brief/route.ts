@@ -13,6 +13,7 @@ import { prisma } from '@/lib/db';
 import { discoverCandidates } from '@/lib/agent/discovery';
 import { findTrackIsrc } from '@/lib/connectors/musixmatch';
 import { isMusixmatchLive } from '@/lib/config/flags';
+import { getCyaniteCurve, searchCyaniteByFreeText } from '@/lib/connectors/cyanite';
 
 async function getAvailableTracks(): Promise<Track[]> {
   try {
@@ -29,29 +30,57 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const briefText = body.brief;
+    const overrides = body.overrides || {};
+    
     if (!briefText) {
       return NextResponse.json({ error: 'Brief text is required' }, { status: 400 });
     }
 
     // 1. Normalize Brief
     const targetArc = await normalizeBrief(briefText);
+    
+    // Apply explicit UI overrides over Claude's generated targetArc
+    Object.assign(targetArc, overrides);
 
-    // 2. Fetch tracks candidates
+    const lang = targetArc.languages[0] || 'en';
+
+    // 2. Fetch tracks candidates (Federated Search)
     let tracks: Track[] = [];
     if (isMusixmatchLive()) {
-      const suggestions = await discoverCandidates(targetArc);
-      for (const sug of suggestions) {
+      const discoveryResult = await discoverCandidates(targetArc);
+      
+      console.log(`[Discovery] Claude suggested ${discoveryResult.tracks.length} tracks.`);
+      // A. Process Claude's suggestions
+      for (const sug of discoveryResult.tracks) {
         const isrc = await findTrackIsrc(sug.title, sug.artist);
-        if (isrc) {
+        if (isrc && !tracks.some(t => t.isrc === isrc)) {
           tracks.push({
             isrc,
             title: sug.title,
             artist: sug.artist,
-            durationMs: 180000, // default mock duration if unknown
-            lang: targetArc.languages[0] || 'en'
+            durationMs: 180000,
+            lang
           });
         }
       }
+
+      // C. Process Cyanite Free Text Search
+      console.log(`[Discovery] Cyanite searching free text for brief themes...`);
+      const cyaniteTracks = await searchCyaniteByFreeText(briefText);
+      const { getSpotifyTrackMetadata } = await import('@/lib/connectors/spotify');
+      for (const ct of cyaniteTracks) {
+        const meta = await getSpotifyTrackMetadata(ct.spotifyId);
+        if (meta && meta.isrc && !tracks.some(t => t.isrc === meta.isrc)) {
+          tracks.push({
+            isrc: meta.isrc,
+            title: meta.title,
+            artist: meta.artist,
+            durationMs: 180000,
+            lang
+          });
+        }
+      }
+
     } else {
       tracks = await getAvailableTracks(); // fallback
     }
@@ -64,14 +93,17 @@ export async function POST(req: Request) {
       const doc = await getEphemeralLyricDoc(track.isrc);
       if (!doc || doc.lines.length === 0) continue;
 
-      // 4. Score Lyric Curve
+      // 4. Spotify Enrichment (we need real duration before aligning)
+      const enrichment = await enrichWithSpotify(track.isrc);
+      const realDurationMs = (enrichment as any).durationMs || track.durationMs || 180000;
+
+      // 5. Score Lyric Curve
       const scores = await scoreLyricCurve(doc.lines, targetArc);
 
-      // 5. Align Section (Hero)
-      const alignment = alignSection(doc.lines, scores, targetArc, track.durationMs);
+      // 6. Align Section (Hero)
+      const alignment = alignSection(doc.lines, scores, targetArc, realDurationMs);
 
-      // 6. Safety check
-      // We pass the market from targetArc if available
+      // 7. Safety check
       const market = targetArc.targetMarkets?.[0] || 'Global';
       const safetyVerdicts = await evaluateSafety(doc, targetArc.brandProfile, market);
 
@@ -85,9 +117,11 @@ export async function POST(req: Request) {
 
       rankedCandidates.push({
         ...track,
+        durationMs: realDurationMs,
         alignment,
         safetyVerdicts,
         safetyLevel,
+        curve: scores.map(s => s.intensity),
         ...enrichment
       } as any);
     }

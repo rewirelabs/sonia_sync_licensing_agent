@@ -33,7 +33,7 @@ export async function evaluateSafety(
   const numberedLines = lyricDoc.lines.map((l, i) => `[${i}] ${l.text}`).join('\n');
   const rules = ruleset.map(r => `- ${r.name}: ${r.description} (Severity: ${r.defaultSeverity})`).join('\n');
 
-  const prompt = `You are Fable, an expert brand-safety compliance AI.
+  const systemPrompt = `You are Fable, an expert brand-safety compliance AI.
 Evaluate the following lyrics against this ruleset for market: ${market}.
 Ruleset:
 ${rules}
@@ -48,16 +48,23 @@ Schema for each object:
   "evidence": string (the original lyric line),
   "translation": string (an English translation of the line to explain the issue),
   "timestampMs": number (timestamp from the line object)
-}
+}`;
 
-Lyrics (original language):
+  const userPrompt = `Lyrics:
 ${numberedLines}`;
 
   try {
     const response = await client.messages.create({
       model: 'claude-opus-4-8',
-      max_tokens: 4096,
-      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 1024,
+      system: [
+        {
+          type: "text",
+          text: systemPrompt,
+          cache_control: { type: "ephemeral" }
+        }
+      ],
+      messages: [{ role: 'user', content: userPrompt }],
     });
     let content = (response.content[0] as any).text.trim();
     if (content.startsWith('```')) {
