@@ -135,8 +135,8 @@ SonIA degrades gracefully. If you run the app without API keys, it uses a bundle
 ### Installation
 ```bash
 # 1. Clone the repository
-git clone https://github.com/rewirelabs/sonia_ai_sync_buddy.git
-cd sonia_ai_sync_buddy
+git clone https://github.com/rewirelabs/sonia_sync_licensing_agent.git
+cd sonia_sync_licensing_agent
 
 # 2. Install dependencies
 npm install
@@ -159,6 +159,13 @@ npm run dev
 - **Database**: LibSQL / SQLite (via Prisma)
 - **AI/LLM**: Anthropic Claude Opus
 - **Core API**: Musixmatch
+
+## License
+
+This project is proprietary software belonging to **Rewire Labs**. 
+It is provided exclusively for the purpose of review by the judges of the Musixmatch Musicathon 2026. 
+No license is granted to use, copy, modify, merge, publish, distribute, sublicense, or sell copies of this software. 
+For full details, please see the [LICENSE](./LICENSE) file.
 
 ---
 *Built by **Rewire Labs** for the Musixmatch Musicathon 2026.*
