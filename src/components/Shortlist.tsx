@@ -5,22 +5,40 @@ import { TrackCard } from './TrackCard';
 interface ShortlistProps {
   tracks: RankedTrack[];
   targetArc: any;
+  briefText?: string;
 }
 
-export function Shortlist({ tracks, targetArc }: ShortlistProps) {
-  if (!tracks || tracks.length === 0) return null;
+export function Shortlist({ tracks, targetArc, briefText }: ShortlistProps) {
+  if (!tracks || tracks.length === 0) {
+    return (
+      <div className="w-full flex flex-col items-center justify-center py-[100px] text-center">
+        <div className="text-[64px] mb-[20px]">🌌</div>
+        <h2 className="text-[24px] font-semibold text-[#e9ecf3] tracking-[-0.01em] mb-[12px]">
+          L'universo musicale è rimasto senza parole.
+        </h2>
+        <p className="text-[15px] leading-[1.6] text-[#e9ecf3]/60 max-w-[440px]">
+          SonIA ha ascoltato con molta attenzione, ma non è riuscita a trovare brani che soddisfino perfettamente le tue richieste nel catalogo attuale. Prova a modificare le parole chiave del tuo brief!
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
       {/* brief recap + arc */}
-      {targetArc && (
-        <div className="flex gap-[16px] flex-wrap items-start mb-[26px]">
+      <div className="flex gap-[16px] flex-wrap items-start mb-[26px]">
+        {targetArc && (
           <div 
             className="flex-1 min-w-[280px] rounded-[14px] bg-[var(--glass)] border border-[var(--glass-border)] p-[16px_18px]"
             style={{ backdropFilter: 'blur(var(--blur))', WebkitBackdropFilter: 'blur(var(--blur))' }}
           >
             <div className="font-mono text-[10px] tracking-[0.18em] uppercase text-[#e9ecf3]/40 mb-[7px]">Your brief</div>
-            <div className="text-[13.5px] leading-[1.55] text-[#e9ecf3]/80">
+            {briefText && (
+              <div className="text-[15px] leading-[1.5] text-[#e9ecf3]/90 italic mb-[16px]">
+                "{briefText}"
+              </div>
+            )}
+            <div className="text-[13.5px] leading-[1.55] text-[#e9ecf3]/80 pt-[12px] border-t border-white/5">
               Target Duration: {targetArc.targetDurationSec || 30}s • Target Markets: {targetArc.targetMarkets?.join(', ') || 'Global'}
             </div>
             <div className="flex flex-wrap gap-[6px] mt-[12px]">
@@ -36,8 +54,8 @@ export function Shortlist({ tracks, targetArc }: ShortlistProps) {
               )}
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       <div className="flex items-baseline gap-[12px] mb-[16px]">
         <h2 className="text-[20px] font-semibold tracking-[-0.01em] m-0">Shortlist</h2>
@@ -57,9 +75,6 @@ export function Shortlist({ tracks, targetArc }: ShortlistProps) {
         ))}
       </div>
 
-      <div className="text-center mt-[28px] font-mono text-[10.5px] tracking-[0.1em] text-[#e9ecf3]/30">
-        Musixmatch lyrics & timings are ephemeral — never stored · derivatives only
-      </div>
     </div>
   );
 }

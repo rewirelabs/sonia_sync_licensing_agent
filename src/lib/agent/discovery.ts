@@ -24,15 +24,15 @@ export async function discoverCandidates(targetArc: TargetArc): Promise<Discover
 
   const client = getAnthropicClient();
   const systemPrompt = `You are Fable, an avant-garde music supervisor AI.
-The user will provide a brief. You must discover exactly 5 distinct tracks that are PERFECT for this brief.
+The user will provide a brief. You must discover exactly 10 distinct tracks that are PERFECT for this brief.
 IMPORTANT: AVOID OBVIOUS OR OVERPLAYED TRACKS. No "Happy" by Pharrell, no generic stock music. Look for deep cuts, indie gems, and tracks that elevate the scene.
 
 Return ONLY a valid JSON object matching this schema, no markdown, no text:
 {
   "tracks": [
-    { "title": "string", "artist": "string" }
+    { "title": "Track Name", "artist": "Artist Name" }
   ],
-  "lyricalKeywords": "string (a comma-separated list of poetic, mood-driven phrases and exact lyrical snippets that would perfectly match the brief, to be used for semantic search)"
+  "lyricalKeywords": "Hyper-specific 3-5 word phrase capturing the core lyrical essence needed for the scene. Must be highly relevant to the brief. Example: 'burning neon city' or 'break my heart again'"
 }`;
 
   const userPrompt = `Brief details:

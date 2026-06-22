@@ -64,6 +64,24 @@ export async function POST(req: Request) {
         }
       }
 
+      // B. Process Musixmatch's semantic search using Claude's keywords
+      if (discoveryResult.lyricalKeywords) {
+        console.log(`[Discovery] Musixmatch searching for keywords: "${discoveryResult.lyricalKeywords}"`);
+        const { searchTracksByLyrics } = await import('@/lib/connectors/musixmatch');
+        const mxmTracks = await searchTracksByLyrics(discoveryResult.lyricalKeywords, lang);
+        for (const mt of mxmTracks) {
+          if (!tracks.some(t => t.isrc === mt.isrc)) {
+            tracks.push({
+              isrc: mt.isrc,
+              title: mt.title,
+              artist: mt.artist,
+              durationMs: 180000,
+              lang
+            });
+          }
+        }
+      }
+
       // C. Process Cyanite Free Text Search
       console.log(`[Discovery] Cyanite searching free text for brief themes...`);
       const cyaniteTracks = await searchCyaniteByFreeText(briefText);
@@ -112,8 +130,6 @@ export async function POST(req: Request) {
       if (safetyVerdicts.some(v => v.severity === 'high')) safetyLevel = 'unsafe';
       else if (safetyVerdicts.some(v => v.severity === 'med')) safetyLevel = 'caution';
 
-      // 7. Spotify Enrichment (Ceiling)
-      const enrichment = await enrichWithSpotify(track.isrc);
 
       rankedCandidates.push({
         ...track,
@@ -126,8 +142,53 @@ export async function POST(req: Request) {
       } as any);
     }
 
+    // Fallback if all discovered tracks failed to get lyrics from Musixmatch
+    if (rankedCandidates.length === 0) {
+      console.log(`[Discovery] No tracks had valid lyrics. Falling back to fixture tracks.`);
+      const fallbackTracks = await getAvailableTracks();
+      for (const track of fallbackTracks) {
+        const doc = await getEphemeralLyricDoc(track.isrc);
+        if (!doc || doc.lines.length === 0) continue;
+        const enrichment = await enrichWithSpotify(track.isrc);
+        const realDurationMs = (enrichment as any).durationMs || track.durationMs || 180000;
+        const scores = await scoreLyricCurve(doc.lines, targetArc);
+        const alignment = alignSection(doc.lines, scores, targetArc, realDurationMs);
+        const market = targetArc.targetMarkets?.[0] || 'Global';
+        const safetyVerdicts = await evaluateSafety(doc, targetArc.brandProfile, market);
+        let safetyLevel = 'safe';
+        if (safetyVerdicts.some(v => v.severity === 'high')) safetyLevel = 'unsafe';
+        else if (safetyVerdicts.some(v => v.severity === 'med')) safetyLevel = 'caution';
+        rankedCandidates.push({
+          ...track,
+          durationMs: realDurationMs,
+          alignment,
+          safetyVerdicts,
+          safetyLevel,
+          curve: scores.map(s => s.intensity),
+          ...enrichment
+        } as any);
+      }
+    }
+
     // 7. Rank
-    const shortlist = rankTracks(rankedCandidates);
+    const shortlist = rankTracks(rankedCandidates).slice(0, 10);
+
+    // 7.5 Generate AI Rationales
+    const { generateRationales } = await import('@/lib/agent/rationale');
+    const mappedRationales = await generateRationales(briefText, shortlist.map(t => ({
+      isrc: t.isrc,
+      title: t.title,
+      artist: t.artist,
+      moneyLine: t.alignment.moneyLine || '',
+      fitScore: t.alignment.fitScore,
+      lang: t.lang || targetArc.languages[0] || 'en'
+    })));
+
+    for (const track of shortlist) {
+      if (mappedRationales[track.isrc]) {
+        track.alignment.fitRationale = mappedRationales[track.isrc];
+      }
+    }
 
     // 8. Save derivatives to DB (NO MUSIXMATCH DATA is saved here, only our metadata)
     const dbBrief = await prisma.brief.create({
@@ -173,6 +234,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({
+      brief: briefText,
       targetArc,
       shortlist
     });

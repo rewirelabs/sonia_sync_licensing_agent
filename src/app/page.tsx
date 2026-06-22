@@ -9,6 +9,7 @@ export default function Home() {
   const [stage, setStage] = useState<'intake' | 'processing' | 'results'>('intake');
   const [shortlist, setShortlist] = useState<RankedTrack[]>([]);
   const [targetArc, setTargetArc] = useState<any>(null);
+  const [briefText, setBriefText] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
   const handleBriefSubmit = async (brief: string, overrides: BriefOverrides) => {
@@ -16,6 +17,7 @@ export default function Home() {
     setError(null);
     setShortlist([]);
     setTargetArc(null);
+    setBriefText(brief);
 
     try {
       const res = await fetch('/api/brief', {
@@ -45,6 +47,7 @@ export default function Home() {
     setStage('intake');
     setShortlist([]);
     setTargetArc(null);
+    setBriefText('');
     setError(null);
   };
 
@@ -107,9 +110,9 @@ export default function Home() {
           <ProcessingLoader isFinished={shortlist.length > 0} targetArcInfo={targetArc} />
         )}
 
-        {stage === 'results' && shortlist.length > 0 && (
+        {stage === 'results' && (
           <div className="flex-1 px-[34px] py-[30px] pb-[70px] max-w-[1080px] w-full mx-auto animate-[sx-fadein_0.5s_ease]">
-            <Shortlist tracks={shortlist} targetArc={targetArc} />
+            <Shortlist tracks={shortlist} targetArc={targetArc} briefText={briefText} />
           </div>
         )}
       </div>

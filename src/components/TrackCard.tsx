@@ -74,7 +74,9 @@ export function TrackCard({ track, rank }: TrackCardProps) {
 
   const marks = track.safetyVerdicts?.filter(v => v.severity !== 'low').map(v => ({
     pos: v.timestampMs / 1000,
-    sev: v.severity
+    sev: v.severity,
+    evidence: v.evidence,
+    category: v.category
   })) || [];
 
   return (
@@ -185,8 +187,9 @@ export function TrackCard({ track, rank }: TrackCardProps) {
               background: m.sev === 'high' ? '#ff4d4d' : '#ffb43d',
               boxShadow: `0 0 8px ${m.sev === 'high' ? 'rgba(255,77,77,0.7)' : 'rgba(255,180,61,0.7)'}`
             }}>
-               <div className="absolute top-[-14px] -translate-x-1/2 whitespace-nowrap text-[8px] font-mono opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: m.sev === 'high' ? '#ff4d4d' : '#ffb43d' }}>
-                 FLAG
+               <div className="absolute top-[-34px] left-1/2 -translate-x-1/2 w-max max-w-[200px] whitespace-normal bg-[#07080c]/95 border px-[8px] py-[6px] rounded-[6px] text-[9.5px] leading-[1.3] opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none" style={{ color: m.sev === 'high' ? '#ff4d4d' : '#ffb43d', borderColor: m.sev === 'high' ? 'rgba(255,77,77,0.3)' : 'rgba(255,180,61,0.3)', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
+                 <div className="font-mono uppercase tracking-wider mb-[2px] opacity-80">{m.category}</div>
+                 <div className="text-white/80 italic">"{m.evidence}"</div>
                </div>
             </div>
           ))}
@@ -232,17 +235,22 @@ export function TrackCard({ track, rank }: TrackCardProps) {
                      </div>
                   ) : (
                     <button 
-                      onClick={handleSplit} disabled={isSplitting || !track.previewUrl}
-                      className="flex-1 font-sans text-[12.5px] font-semibold text-[#0a0a0c] bg-gradient-to-r from-accent to-[#ff3d7f] border-0 rounded-[9px] p-[10px] cursor-pointer disabled:opacity-50"
+                      onClick={handleSplit} 
+                      disabled={isSplitting || !track.previewUrl}
+                      title={!track.previewUrl ? 'Audio preview not available from Spotify' : ''}
+                      className="flex-1 font-sans text-[12.5px] font-semibold text-[#0a0a0c] bg-gradient-to-r from-accent to-[#ff3d7f] border-0 rounded-[9px] p-[10px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isSplitting ? 'Splitting...' : 'Extract Stems'}
                     </button>
                   )}
-                  {track.previewUrl && !isSplitting && !stems && (
-                    <button onClick={() => {
-                      const audio = new Audio(track.previewUrl!);
-                      audio.play();
-                    }} className="font-sans text-[12.5px] text-[#e9ecf3] bg-white/5 border border-white/10 rounded-[9px] px-[14px] py-[10px] cursor-pointer hover:bg-white/10">▶</button>
+                  {track.spotifyId && (
+                    <a 
+                      href={`https://open.spotify.com/track/${track.spotifyId}`} 
+                      target="_blank" rel="noopener noreferrer"
+                      className="font-sans text-[12.5px] flex items-center justify-center text-[#1db954] font-semibold bg-white/5 border border-[#1db954]/20 rounded-[9px] px-[14px] py-[10px] cursor-pointer hover:bg-[#1db954]/10 transition-colors no-underline"
+                    >
+                      ▶ Play in Spotify
+                    </a>
                   )}
                 </div>
                 {stemError && <span className="text-xs text-red-400">{stemError}</span>}

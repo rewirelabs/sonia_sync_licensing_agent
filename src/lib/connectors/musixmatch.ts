@@ -49,7 +49,7 @@ export async function searchTracksByLyrics(keywords: string, lang: string): Prom
       q_lyrics: keywords,
       f_lyrics_language: lang || 'en',
       s_track_rating: 'desc',
-      page_size: '5',
+      page_size: '20',
       f_has_lyrics: '1'
     });
     const trackList = trackBody.track_list;
