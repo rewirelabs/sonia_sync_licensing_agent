@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://github.com/rewirelabs/sonia_ai_sync_buddy/raw/main/public/logo.png" alt="SonIA Logo" width="120" />
+  <img src="./docs/logo.jpeg" alt="SonIA Logo" width="120" />
   <h1>SonIA — The AI Sync Buddy</h1>
   <p><em>"She doesn't search. She listens."</em></p>
   <p>An intelligent, context-aware sync-licensing assistant built for the <b>Musixmatch Musicathon</b>.</p>
@@ -13,8 +13,7 @@ Music Supervisors in the advertising and film industry spend countless hours com
 
 **SonIA (Sync Intelligence Agent)** automates this entire pipeline. By taking a simple creative brief (e.g., *"A neon-lit car chase through Tokyo that ends in a tragic crash"*), SonIA orchestrates a multi-agent AI workflow that discovers, analyzes, and ranks the perfect tracks for your scene.
 
-<!-- INSERT HERO IMAGE OR UI SCREENSHOT HERE -->
-<!-- Example: <img src="./docs/hero.png" alt="SonIA Interface" width="100%" /> -->
+<img src="./docs/home.png" alt="SonIA Brief Intake Interface" width="100%" />
 
 ## How It Works (The Pipeline)
 
@@ -27,8 +26,11 @@ SonIA uses a federated search and analysis pipeline, leaning heavily on Musixmat
 5. **AI Rationale Generation**: The Top 10 tracks are finalized, and Claude writes a custom, persuasive pitch for why each track was chosen, acting as a virtual Music Supervisor.
 6. **Enrichment (The Ceiling)**: External APIs like Spotify (for audio previews) and LALAL.AI (for on-demand stem extraction) decorate the final results.
 
-<!-- INSERT PIPELINE/ARCHITECTURE DIAGRAM HERE -->
-<!-- Example: <img src="./docs/pipeline.png" alt="SonIA Pipeline" width="100%" /> -->
+### The Analysis Phase
+<img src="./docs/workflow.png" alt="SonIA Processing Analysis" width="100%" />
+
+### The Final Shortlist
+<img src="./docs/results.png" alt="SonIA Shortlist Results" width="100%" />
 
 ## Hard Constraints: No-Storage Rule
 
