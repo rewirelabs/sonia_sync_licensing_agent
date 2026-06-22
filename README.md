@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./docs/logo.jpeg" alt="SonIA Logo" width="120" />
+  <img src="./docs/logo.jpeg" alt="SonIA Logo" width="300" />
   <h1>SonIA — The AI Sync Buddy</h1>
   <p><em>"She doesn't search. She listens."</em></p>
   <p>An intelligent, context-aware sync-licensing assistant built for the <b>Musixmatch Musicathon</b>.</p>
