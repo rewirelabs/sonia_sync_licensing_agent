@@ -109,9 +109,6 @@ export function ProcessingLoader({ isFinished, targetArcInfo }: { isFinished: bo
             <div className="text-[27px] font-semibold tracking-[-0.02em] leading-[1.2] min-h-[34px]">
               {phrase}<span className="text-accent">…</span>
             </div>
-            <div className="font-mono text-[12.5px] text-[#e9ecf3]/50 mt-[10px] min-h-[18px]">
-              {tickerStr}
-            </div>
 
             {/* progress */}
             <div className="mt-[24px]">
